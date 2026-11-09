@@ -1,121 +1,69 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const questions = document.querySelectorAll(".faq-question");
+	const questions = document.querySelectorAll(".faq-question");
 
-  questions.forEach(question => {
-    question.addEventListener("click", () => {
-      question.classList.toggle("active");
-      const answer = question.nextElementSibling;
-      const icon = question.querySelector(".icon");
+	questions.forEach((question) => {
+		question.addEventListener("click", () => {
+			question.classList.toggle("active");
+			const answer = question.nextElementSibling;
+			const icon = question.querySelector(".icon");
 
-      if (answer.style.display === "block") {
-        answer.style.display = "none";
-        icon.textContent = "+";
-      } else {
-        answer.style.display = "block";
-        icon.textContent = "-";
-      }
-    });
-  });
-
-
+			if (answer.style.display === "block") {
+				answer.style.display = "none";
+				icon.textContent = "+";
+			} else {
+				answer.style.display = "block";
+				icon.textContent = "-";
+			}
+		});
+	});
 });
-
 
 document.addEventListener("DOMContentLoaded", function () {
-  // Page has finished loading. Now, do things.
-  loadLayoutByPetraPixel();
+	// Page has finished loading. Now, do things.
+	loadLayoutByPetraPixel();
 
-  // Add any custom JavaScript code here...
+	// Add any custom JavaScript code here...
 });
 
-document.addEventListener('wheel', gererEvenementDeDefilement, { passive: false });
+document.addEventListener("wheel", gererEvenementDeDefilement, { passive: false });
 
 function gererEvenementDeDefilement(event) {
-  // Vérifie si l'utilisateur est en haut de la page et tente de défiler vers le haut.
-  // window.scrollY === 0 : Cela signifie que la page est déjà tout en haut.
-  // event.deltaY < 0 : L'utilisateur essaie de défiler vers le haut.
+	// Vérifie si l'utilisateur est en haut de la page et tente de défiler vers le haut.
+	// window.scrollY === 0 : Cela signifie que la page est déjà tout en haut.
+	// event.deltaY < 0 : L'utilisateur essaie de défiler vers le haut.
 
-  // Vérifie si l'utilisateur est en bas de la page et tente de défiler vers le bas.
-  // window.innerHeight + window.scrollY : La position actuelle en bas de la fenêtre visible.
-  // document.body.offsetHeight : La hauteur totale du contenu de la page.
-  // Ces deux valeurs égales ou supérieures indiquent qu'on est au bas de la page.
-  if ((window.scrollY === 0 && event.deltaY < 0) || (window.innerHeight + window.scrollY >= document.body.offsetHeight && event.deltaY > 0)) {
-    // Empêche le comportement de défilement par défaut dans ces cas précis.
-    event.preventDefault();
-  }
+	// Vérifie si l'utilisateur est en bas de la page et tente de défiler vers le bas.
+	// window.innerHeight + window.scrollY : La position actuelle en bas de la fenêtre visible.
+	// document.body.offsetHeight : La hauteur totale du contenu de la page.
+	// Ces deux valeurs égales ou supérieures indiquent qu'on est au bas de la page.
+	if ((window.scrollY === 0 && event.deltaY < 0) || (window.innerHeight + window.scrollY >= document.body.offsetHeight && event.deltaY > 0)) {
+		// Empêche le comportement de défilement par défaut dans ces cas précis.
+		event.preventDefault();
+	}
 }
-
 
 function loadLayoutByPetraPixel() {
-  const mainEl = document.querySelector("main");
-  if (!mainEl) return;
-  mainEl.insertAdjacentHTML("beforebegin", headerHTML());
-  mainEl.insertAdjacentHTML("afterend", footerHTML());
-  giveActiveClassToCurrentPage();
-  loadWidgetScripts();
+	const mainEl = document.querySelector("main");
+	if (!mainEl) return;
+	mainEl.insertAdjacentHTML("beforebegin", headerHTML());
+	mainEl.insertAdjacentHTML("afterend", footerHTML());
+	giveActiveClassToCurrentPage();
 }
 
-
-function loadWidgetScripts() {
-  //! Moon
-  const moonScript = document.createElement('script');
-  moonScript.textContent = `
-    (function () {
-      var d = new Date().getDate();
-      var m = document.querySelectorAll("#contain_moon div");
-      var a = new XMLHttpRequest();
-      var url = "https://www.icalendar37.net/lunar/api/?lang=en&month=" + (new Date().getMonth() + 1) + "&year=" + (new Date().getFullYear()) + "&size=75&lightColor=rgb(248,243,220)&shadeColor=rgb(127,127,127)&LDZ=" + new Date(new Date().getFullYear(), new Date().getMonth(), 1) / 1000;
-      m[1].style.height = "75px";
-      a.onreadystatechange = function () {
-        if (a.readyState == 4 && a.status == 200) {
-          var b = JSON.parse(a.responseText);
-          m[1].innerHTML = b.phase[d].svg;
-          if (typeof moon_widget_loaded == "function") moon_widget_loaded(b);
-          m[2].innerHTML = b.phase[d].npWidget;
-        }
-      };
-      a.open("GET", url, true);
-      a.send();
-    })()`;
-  document.body.appendChild(moonScript);
-
-  //! Guestbook
-  if (!document.getElementById('HCB_comment_box')) return;
-  window.hcb_user = { PAGE: window.location.href };
-  const hcbScript = document.createElement('script');
-  hcbScript.type = 'text/javascript';
-  hcbScript.id = 'hcb';
-  hcbScript.textContent = `
-    if (!window.hcb_user) { hcb_user = {}; }
-    (function() {
-      var s = document.createElement("script"),
-          l = hcb_user.PAGE || (" " + window.location).replace(/'/g, "%27"),
-          h = "https://www.htmlcommentbox.com";
-      s.setAttribute("type", "text/javascript");
-      s.setAttribute("src", h + "/jread?page=" + encodeURIComponent(l).replace("+", "%2B") 
-        + "&mod=%241%24wq1rdBcg%24NACPueU.r0OSn70BUBG0K1"
-        + "&opts=16798&num=10&ts=1780562333100");
-      if (typeof s != "undefined") document.getElementsByTagName("head")[0].appendChild(s);
-    })();
-  `;
-  document.body.appendChild(hcbScript);
-}
-
-const UTILS = new URL("../", document.currentScript.src).href;   // le dossier utils/
-const SITE  = new URL("../../", document.currentScript.src).href; // la racine du site
+const UTILS = new URL("../", document.currentScript.src).href; // le dossier utils/
+const SITE = new URL("../../", document.currentScript.src).href; // la racine du site
 
 function headerHTML() {
-  // ${nesting} outputs "./" or "../" depending on current page depth.
-  // You can use it to refer to images etc.
-  // Example: <img src="${nesting}img/logo.png"> might output <img src="../img/logo.png">
+	// ${nesting} outputs "./" or "../" depending on current page depth.
+	// You can use it to refer to images etc.
+	// Example: <img src="${nesting}img/logo.png"> might output <img src="../img/logo.png">
 
-  return `
+	return `
   
       <!-- =============================================== -->
       <!-- HEADER -->
       <!-- =============================================== -->
       <header>
-        <img src="${UTILS}images/gif/name.gif" name="websiteTitle" id="websiteTitle">
       </header>
         
       <!-- =============================================== -->
@@ -133,32 +81,12 @@ function headerHTML() {
               <li>
                 <li><a href="https://elisabethm.vercel.app" id="nav-title"><img width="25" src="${UTILS}images/puce/home.gif" alt aria-hidden="true">Home</a></li>
                 <li><a href="${SITE}moreAboutMe/more-about-me.html" id="nav-title"><img width="25"src="${UTILS}images/puce/eye.gif" alt aria-hidden="true">More about me</a></li>
-                <details data-id="Hobbies">
-                  <summary>Hobbies</summary>
-                  <ul>
-                      <li><a href="${SITE}mesCreations/creations.html"><img width="25"src="${UTILS}images/puce/bear.gif" alt aria-hidden="true">Crochet</a></li>
-                      <li><a href="${SITE}pokemon/pokemon.html"><img width="25"src="${UTILS}images/puce/pokemon.gif" alt aria-hidden="true">Pokemon</a></li>
-                      <li><a href="${SITE}picrew/picrew.html"><img width="25" src="${UTILS}images/puce/picrew.gif" alt aria-hidden="true">Picrew</a></li>
-                  </ul>
-                </details>
-                <details data-id="Website">
-                  <summary>Website</summary>
-                  <ul>
-                      <li><a href="${SITE}resources/resources.html"><img width="25" src="${UTILS}images/puce/ressources.gif" alt aria-hidden="true">Resources</a></li>
-                      <li><a href="${SITE}guestbook/guestbook.html"><img width="25"src="${UTILS}images/puce/guestbook.gif" alt aria-hidden="true">Guestbook</a></li>
-                  </ul>
-                </details>
               </li>
             </ul>
           </nav>
           </div>
         </div>
         
-        <div class="sidebar-section" id="quote">
-          <div class="sidebar-title">Quote</div>
-          <blockquote id="blockquote">
-          </blockquote>
-        </div>
 
         <div class="sidebar-section" id="time"> 
           <div class="sidebar-title">My time</div>
@@ -170,62 +98,18 @@ function headerHTML() {
           <div class="sidebar-title">Links</div>
           <div class="site-button">
           	<div><a href="https://github.com/KitsuneNoMegami"><img src="${UTILS}images/buttonrepositoy.gif" alt="buttonrepository"></a></div>
-            <div><a href="https://boxd.it/bOZFp"><img src="${UTILS}images/letterboxd.gif"  alt="buttonletterboxd"></a></div> 
           </div>
         </div>
         
-        <marquee>
-          <img src="${UTILS}images/stamps/nomnomnom.gif" alt="nomnomnom" id="stamp">
-          <img src="${UTILS}images/stamps/cherryblossom.png" alt="cherryblossom" id="stamp">
-          <img src="${UTILS}images/stamps/clubpenguin.jpg" alt="clubpenguin" id="stamp">
-          <img src="${UTILS}images/stamps/rawr.gif" alt="rawr" id="stamp">
-          <img src="${UTILS}images/stamps/cows.png" alt="cows" id="stamp">
-          <img src="${UTILS}images/stamps/mms.gif" alt="mms" id="stamp">
-          <img src="${UTILS}images/stamps/computeralive.png" alt="computeralive" id="stamp">
-          <img src="${UTILS}images/stamps/ragequit.gif" alt="ragequit" id="stamp">
-          <img src="${UTILS}images/stamps/sol.png" alt="sol" id="stamp">
-          <img src="${UTILS}images/stamps/bubble.gif" alt="bubble" id="stamp">
-          <img src="${UTILS}images/stamps/rainbow.gif" alt="rainbow" id="stamp">
-          <img src="${UTILS}images/stamps/cheese.gif" alt="cheese" id="stamp">
-          <img src="${UTILS}images/stamps/sleepwithplushies.png" alt="sleepwithplushies" id="stamp">
-          <img src="${UTILS}images/stamps/papercut.gif" alt="papercut" id="stamp">
-          <img src="${UTILS}images/stamps/leftportail.png" alt="leftportail" id="stamp">
-          <img src="${UTILS}images/stamps/rightportal.png" alt="rightportal" id="stamp">
-          <img src="${UTILS}images/stamps/stamponfire.gif" alt="stamponfire" id="stamp">
-          <img src="${UTILS}images/stamps/wiggly.png" alt="wiggly" id="stamp">
-        </marquee> 
-      </aside>
-      <aside class="right-sidebar">
-              <div class="sidebar-section">
-                      <div class="sidebar-title">TamaNOTchi</div>
-                      <a href="https://tamanotchi.world/31404c"><img src="https://tamanotchi.world/i/31404"
-                                      alt="It's tamaNOTchi! Click to feed!"></a>
-              </div>
-              <div class="sidebar-section">
-                      <div class="sidebar-title">Moon Phase</div>
-                      <div id="contain_moon" style="text-align:center;padding-top:4px;padding-bottom:4px;">
-                              <div style="font-weight:bold"></div>
-                              <div
-                                      style="margin-top:-5px;margin-bottom:-11px;padding:23px;filter:drop-shadow(0 0 23px hsl(9,100%,76%))">
-                              </div>
-                              <div id="text">.</div>
-                              <div style="font-size:small"></div>
-                      </div>
-              </div>
-              <div class="sidebar-section">
-                <div class="sidebar-title">Visitor counter</div>
-                <img src="https://counter6.optistats.ovh/private/compteurdevisite.php?c=gnrkz6zqcqg8rlwx9rry28rd943slr11"
-                    border="0" class="visit-badge" alt="visitor counter">
-              </div>
       </aside>`;
 }
 
 function footerHTML() {
-  // ${nesting} outputs "./" or "../" depending on current page depth.
-  // You can use it to refer to images etc.
-  // Example: <img src="${nesting}img/logo.png"> might output <img src="../img/logo.png">
+	// ${nesting} outputs "./" or "../" depending on current page depth.
+	// You can use it to refer to images etc.
+	// Example: <img src="${nesting}img/logo.png"> might output <img src="../img/logo.png">
 
-  return `
+	return `
 
 
                                             <!-- =============================================== -->
@@ -233,71 +117,47 @@ function footerHTML() {
                                             <!-- =============================================== -->
 
                                             <footer>
-                                              <div>
-                                                <p><img src="${UTILS}images/gif/noAI.gif"></br>
-            © 2025 Beth, all rights reserved ♡</p>
-                                              </div>
                                             </footer>`;
 }
 
 /* Do not edit anything below this line unless you know what you're doing. */
 
 function giveActiveClassToCurrentPage() {
-  const els = document.querySelectorAll("nav a");
-  [...els].forEach((el) => {
-    const href = el.getAttribute("href").replace(".html", "").replace("#", "");
-    const pathname = window.location.pathname.replace("/public/", "");
-    const currentHref = window.location.href.replace(".html", "") + "END";
+	const els = document.querySelectorAll("nav a");
+	[...els].forEach((el) => {
+		const href = el.getAttribute("href").replace(".html", "").replace("#", "");
+		const pathname = window.location.pathname.replace("/public/", "");
+		const currentHref = window.location.href.replace(".html", "") + "END";
 
-    /* Homepage */
-    if (href == "/" || href == "/index.html") {
-      if (pathname == "/") {
-        el.classList.add("active");
-      }
-    } else {
-      /* Other pages */
-      if (currentHref.includes(href + "END")) {
-        el.classList.add("active");
+		/* Homepage */
+		if (href == "/" || href == "/index.html") {
+			if (pathname == "/") {
+				el.classList.add("active");
+			}
+		} else {
+			/* Other pages */
+			if (currentHref.includes(href + "END")) {
+				el.classList.add("active");
 
-        /* Subnavigation: */
+				/* Subnavigation: */
 
-        if (el.closest("details")) {
-          el.closest("details").setAttribute("open", "open");
-          el.closest("details").classList.add("active");
-        }
+				if (el.closest("details")) {
+					el.closest("details").setAttribute("open", "open");
+					el.closest("details").classList.add("active");
+				}
 
-        if (el.closest("ul")) {
-          if (el.closest("ul").closest("ul")) {
-            el.closest("ul").closest("ul").classList.add("active");
-          }
-        }
-      }
-    }
-  });
+				if (el.closest("ul")) {
+					if (el.closest("ul").closest("ul")) {
+						el.closest("ul").closest("ul").classList.add("active");
+					}
+				}
+			}
+		}
+	});
 }
 
 function getNesting() {
-  const numberOfSlashes = window.location.pathname.split("/").length - 1;
-  if (numberOfSlashes == 1) return "./";
-  return "../".repeat(numberOfSlashes - 1);
+	const numberOfSlashes = window.location.pathname.split("/").length - 1;
+	if (numberOfSlashes == 1) return "./";
+	return "../".repeat(numberOfSlashes - 1);
 }
-
-// QUOTE
-document.addEventListener(
-  'DOMContentLoaded',
-  async () => {
-    const quotesList = await (await fetch(UTILS + "quotes.json")).json();
-    document.getElementById("blockquote").innerHTML = quotesList[Math.floor(Math.random() * quotesList.length)];
-  }
-);
-
-//CommentBox
-if (!window.hcb_user) { hcb_user = {}; }
-(function () {
-  var s = document.createElement("script"),
-    l = hcb_user.PAGE || ("" + window.location).replace(/'/g, "%27"),
-    h = "https://www.htmlcommentbox.com";
-  s.setAttribute("type", "text/javascript");
-  s.setAttribute("src", h + "/jread?page=" + encodeURIComponent(l).replace("+", "%2B") + "&mod=%241%24wq1rdBcg%24NACPueU.r0OSn70BUBG0K1" + "&opts=16798&num=10&ts=1779454163371");
-  if (typeof s != "undefined") document.getElementsByTagName("head")[0].appendChild(s);
-})();
