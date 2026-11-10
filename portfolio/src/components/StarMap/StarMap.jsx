@@ -148,7 +148,7 @@ const StarMap = () => {
       className={`star-map-container ${hoveredId !== null ? 'has-focus' : ''}`}
       ref={containerRef}
     >
-      <Starfield pointerRef={pointer} warpKey={warpKey} />
+      <Starfield warpKey={warpKey} />
 
       <header className="hud">
         <h1>{aboutMe.name}</h1>
