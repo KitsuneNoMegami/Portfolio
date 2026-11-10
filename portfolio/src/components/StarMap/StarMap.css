@@ -1,0 +1,105 @@
+/* StarMap : conteneur plein écran (le fond vit dans base.css / Starfield) */
+
+.star-map-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* Calque "caméra" : c'est lui qui zoome vers l'étoile cliquée */
+.constellation {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  transition: transform 1s cubic-bezier(0.22, 0.8, 0.2, 1);
+}
+.constellation.zoomed { transform: scale(1.7); }
+.constellation.zoomed .star:not(.active) { opacity: 0.2; }
+
+.star-anchor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  will-change: transform;
+}
+
+/* --- Liens --- */
+.star-connections {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.link {
+  stroke: var(--connection-color);
+  stroke-linecap: round;
+  transition: stroke-opacity 0.4s, stroke-width 0.4s;
+}
+.link-hub { stroke-width: 1.2; stroke-opacity: 0.3; }
+.link-tag { stroke: var(--star-primary); stroke-width: 1; stroke-opacity: 0.2; stroke-dasharray: 2 7; }
+
+.has-focus .link:not(.lit) { stroke-opacity: 0.06; }
+
+.link.lit {
+  stroke-opacity: 0.95;
+  stroke-width: 2;
+  stroke-dasharray: 8 10;
+  animation: flow 1.2s linear infinite;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.6));
+}
+
+@keyframes flow { to { stroke-dashoffset: -18; } }
+
+/* --- HUD --- */
+.hud {
+  position: absolute;
+  top: 24px;
+  left: 28px;
+  z-index: 5;
+  pointer-events: none;
+  animation: fadeIn 1.5s ease 0.2s backwards;
+}
+.hud h1 {
+  font-size: clamp(14px, 1.5vw, 18px);
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
+.hud p {
+  margin-top: 4px;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  color: var(--text-secondary);
+}
+
+.hint {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  translate: -50% 0;
+  z-index: 5;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  pointer-events: none;
+  animation: fadeIn 1.5s ease 2s backwards, hint-pulse 4s ease-in-out 3.5s infinite;
+}
+@keyframes hint-pulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+
+@media (max-width: 768px) {
+  .hud { top: 16px; left: 16px; }
+  .hint { font-size: 10px; width: 90%; text-align: center; }
+  .constellation.zoomed { transform: scale(1.4); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .constellation { transition: none; }
+  .link.lit, .hint { animation: none; }
+}

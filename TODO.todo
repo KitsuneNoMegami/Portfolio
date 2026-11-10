@@ -1,8 +1,0 @@
-- Faire les routes parce c'est pa bo
-- Changer la police d'ecriture de la Quote
-- Passer au scss
-- Remplacer les texte emoji par un clipboard
-- page pour les revues des films/musiques/ livres
-- changer l'icone du site
--Faire un fichier annexe pour le script js
- document.write("<script src='"+document.currentScript.src+"/?clt="+(localStorage.getItem('compteurlt')||0)+"&ca="+(localStorage.getItem('compteuraut')||0)+"&s="+encodeURIComponent(window.location.hostname)+"'></script>");

@@ -1,0 +1,45 @@
+/* ============================================ */
+/* MAIN STYLES - Constellation Portfolio        */
+/* ============================================ */
+
+@import './base.css';
+
+/* Ensure the app takes full viewport */
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+.app {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  position: relative;
+}
+
+/* Le fond (étoiles, nébuleuses, vignette) vit dans base.css, composant <Starfield />.
+   Supprimés ici car en doublon ou en conflit :
+   - .star-connections (déjà dans base.css)
+   - .star-map-container::before + @keyframes twinkle : ce fond de nébuleuses qui
+     « respirait » était la seule animation visible, et il redéfinissait twinkle
+   - @keyframes fadeIn (déjà dans base.css)
+   - background-attachment (inutile : aucun fond d'image à fixer) */
+
+/* Animations utilitaires */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+.float {
+  animation: float 3s ease-in-out infinite;
+}
