@@ -1,45 +1,53 @@
-import React, { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Star from '../Star/Star';
 import Starfield from '../Starfield/Starfield';
 import ProjectModal from '../ProjectModal/ProjectModal';
 import InfoPanel from '../InfoPanel/InfoPanel';
-import { projects, centralStar, connections, aboutMe, skills } from '../../data/projects.js';
+import { projects, centralStar, groups, aboutMe, skills, journey, contact } from '../../data/projects.js';
 import './StarMap.css';
 
 const allStars = [centralStar, ...projects];
-
-// Profondeur de chaque étoile (0.7 – 1.3), déterministe : les "proches" bougent plus et sont plus grosses
-const depthOf = (s) => (s.type === 'central' ? 0.5 : 0.7 + ((s.id * 7) % 5) * 0.15);
-const PARALLAX = 28; // px de décalage max pour depth = 1
-
-// Liens "hub" (données) + liens entre projets partageant une techno (hors "Web", trop générique)
-const tagLinks = [];
-projects.forEach((a, i) =>
-  projects.slice(i + 1).forEach((b) => {
-    const shared = (a.tags || []).filter((t) => t !== 'Web' && b.tags?.includes(t));
-    if (shared.length) tagLinks.push({ key: `t${a.id}-${b.id}`, from: a.id, to: b.id, kind: 'tag' });
-  })
+const byId = Object.fromEntries(allStars.map((s) => [s.id, s]));
+const groupOf = (s) => groups.find((g) => g.id === s.group);
+const allTags = [...new Set(projects.flatMap((p) => p.tags || []))].sort((a, b) =>
+  a === 'Web' ? -1 : b === 'Web' ? 1 : a.localeCompare(b)
 );
+
+// Liens : Moi → chaque projet (hub) + tracé de chaque constellation (group)
 const links = [
-  ...connections.map((c) => ({ key: `h${c.to}`, from: c.from, to: c.to, kind: 'hub', color: c.color })),
-  ...tagLinks,
+  ...projects.map((p) => ({ key: `h${p.id}`, from: 0, to: p.id, kind: 'hub' })),
+  ...groups.flatMap((g) =>
+    g.members.slice(1).map((id, i) => ({ key: `g${g.id}${id}`, from: g.members[i], to: id, kind: 'group', group: g.id, featured: g.featured }))
+  ),
 ];
 
 const prefersReduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const NARROW = '(max-width: 768px)';
 
 const StarMap = () => {
   const [selectedStar, setSelectedStar] = useState(null);
   const [showInfoPanel, setShowInfoPanel] = useState(false);
   const [activeSection, setActiveSection] = useState('about');
   const [hoveredId, setHoveredId] = useState(null);
+  const [activeTag, setActiveTag] = useState(null);
+  const [narrow, setNarrow] = useState(() => window.matchMedia(NARROW).matches);
   const [zoom, setZoom] = useState({ id: null, x: 50, y: 50, on: false });
   const [warpKey, setWarpKey] = useState(0);
-
-  const containerRef = useRef(null);
-  const pointer = useRef({ x: 0, y: 0 });
-  const anchorRefs = useRef({});
-  const lineRefs = useRef({});
   const timer = useRef(null);
+
+  const posOf = useCallback((s) => (narrow && s.mobilePosition ? s.mobilePosition : s.position), [narrow]);
+
+  useEffect(() => {
+    const mq = window.matchMedia(NARROW);
+    const onChange = (e) => setNarrow(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
+  const matches = useCallback(
+    (s) => !activeTag || s.type === 'central' || s.tags?.includes(activeTag),
+    [activeTag]
+  );
 
   const handleStarClick = useCallback((star) => {
     clearTimeout(timer.current);
@@ -51,11 +59,11 @@ const StarMap = () => {
       setShowInfoPanel(true);
       return;
     }
+    const p = posOf(star);
     setShowInfoPanel(false);
-    setZoom({ id: star.id, x: star.position.x, y: star.position.y, on: true });
-    // on laisse la caméra "voler" vers l'étoile avant d'ouvrir la fiche
+    setZoom({ id: star.id, x: p.x, y: p.y, on: true });
     timer.current = setTimeout(() => setSelectedStar(star), prefersReduced() ? 0 : 550);
-  }, []);
+  }, [posOf]);
 
   const closeModal = useCallback(() => {
     clearTimeout(timer.current);
@@ -63,134 +71,127 @@ const StarMap = () => {
     setZoom((z) => ({ ...z, on: false }));
   }, []);
 
-  // Parallaxe : une seule boucle rAF déplace les étoiles ET recolle les lignes dessus
-  useLayoutEffect(() => {
-    const el = containerRef.current;
-    let w = el.clientWidth;
-    let h = el.clientHeight;
-    let raf;
-    const smooth = { x: 0, y: 0 };
-    const reduced = prefersReduced();
-
-    const ro = new ResizeObserver(() => {
-      w = el.clientWidth;
-      h = el.clientHeight;
-    });
-    ro.observe(el);
-
-    const onMove = (e) => {
-      pointer.current.x = (e.clientX / window.innerWidth - 0.5) * 2;
-      pointer.current.y = (e.clientY / window.innerHeight - 0.5) * 2;
-    };
-    window.addEventListener('pointermove', onMove);
-
-    const tick = () => {
-      smooth.x += (pointer.current.x - smooth.x) * 0.06;
-      smooth.y += (pointer.current.y - smooth.y) * 0.06;
-      el.style.setProperty('--mx', smooth.x.toFixed(3));
-      el.style.setProperty('--my', smooth.y.toFixed(3));
-
-      const pos = {};
-      for (const s of allStars) {
-        const d = depthOf(s);
-        const x = (s.position.x / 100) * w + (reduced ? 0 : -smooth.x * PARALLAX * d);
-        const y = (s.position.y / 100) * h + (reduced ? 0 : -smooth.y * PARALLAX * d);
-        pos[s.id] = { x, y };
-        const a = anchorRefs.current[s.id];
-        if (a) a.style.transform = `translate(${x}px, ${y}px)`;
-      }
-      for (const l of links) {
-        const ln = lineRefs.current[l.key];
-        const a = pos[l.from];
-        const b = pos[l.to];
-        if (ln && a && b) {
-          ln.setAttribute('x1', a.x);
-          ln.setAttribute('y1', a.y);
-          ln.setAttribute('x2', b.x);
-          ln.setAttribute('y2', b.y);
-        }
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    tick();
-
-    return () => {
-      cancelAnimationFrame(raf);
-      ro.disconnect();
-      window.removeEventListener('pointermove', onMove);
-    };
-  }, []);
-
+  // Échap + flèches (focus de l'étoile voisine la plus proche dans la direction)
   useEffect(() => {
+    const dirs = { ArrowRight: [1, 0], ArrowLeft: [-1, 0], ArrowDown: [0, 1], ArrowUp: [0, -1] };
     const onKey = (e) => {
-      if (e.key !== 'Escape') return;
-      if (selectedStar || zoom.on) closeModal();
-      else if (showInfoPanel) setShowInfoPanel(false);
+      if (e.key === 'Escape') {
+        if (selectedStar || zoom.on) closeModal();
+        else if (showInfoPanel) setShowInfoPanel(false);
+        return;
+      }
+      const d = dirs[e.key];
+      const current = document.activeElement?.dataset?.starId;
+      if (!d || current === undefined || selectedStar || showInfoPanel) return;
+      const from = posOf(byId[current]);
+      let best = null;
+      let bestScore = Infinity;
+      for (const s of allStars) {
+        if (String(s.id) === current || !matches(s)) continue;
+        const p = posOf(s);
+        const dx = p.x - from.x;
+        const dy = p.y - from.y;
+        const along = dx * d[0] + dy * d[1];
+        if (along <= 0) continue;
+        const score = along + 2 * Math.abs(dx * d[1] - dy * d[0]);
+        if (score < bestScore) { bestScore = score; best = s; }
+      }
+      if (best) {
+        e.preventDefault();
+        document.querySelector(`[data-star-id="${best.id}"]`)?.focus();
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selectedStar, zoom.on, showInfoPanel, closeModal]);
+  }, [selectedStar, zoom.on, showInfoPanel, closeModal, posOf, matches]);
 
   useEffect(() => () => clearTimeout(timer.current), []);
 
-  // Survol : on allume les liens de l'étoile et on estompe le reste
-  const focus = new Set();
-  if (hoveredId !== null) {
-    focus.add(hoveredId);
-    links.forEach((l) => {
-      if (l.from === hoveredId || l.to === hoveredId) focus.add(l.from).add(l.to);
-    });
-  }
+  const selectTag = (tag) => setActiveTag((t) => (t === tag ? null : tag));
+
+  const focus = useMemo(() => {
+    const set = new Set();
+    if (hoveredId !== null) {
+      set.add(hoveredId);
+      links.forEach((l) => {
+        if (l.from === hoveredId || l.to === hoveredId) set.add(l.from).add(l.to);
+      });
+    }
+    return set;
+  }, [hoveredId]);
   const isLit = (l) => hoveredId !== null && (l.from === hoveredId || l.to === hoveredId);
 
   return (
-    <div
-      className={`star-map-container ${hoveredId !== null ? 'has-focus' : ''}`}
-      ref={containerRef}
-    >
+    <div className={`star-map-container ${hoveredId !== null ? 'has-focus' : ''}`}>
       <Starfield warpKey={warpKey} />
 
       <header className="hud">
         <h1>{aboutMe.name}</h1>
         <p>Web Developer · Portfolio</p>
+        {contact.website && (
+          <a className="hud-link" href={contact.website} target="_blank" rel="noopener noreferrer">
+            ↗ Personal website
+          </a>
+        )}
       </header>
 
-      <div
-        className={`constellation ${zoom.on ? 'zoomed' : ''}`}
-        style={{ transformOrigin: `${zoom.x}% ${zoom.y}%` }}
-      >
+      <nav className="filters" aria-label="Filter projects by technology">
+        <button className={`chip ${!activeTag ? 'on' : ''}`} aria-pressed={!activeTag} onClick={() => setActiveTag(null)}>All</button>
+        {allTags.map((t) => (
+          <button key={t} className={`chip ${activeTag === t ? 'on' : ''}`} aria-pressed={activeTag === t} onClick={() => selectTag(t)}>
+            {t}
+          </button>
+        ))}
+      </nav>
+
+      <div className={`constellation ${zoom.on ? 'zoomed' : ''}`} style={{ transformOrigin: `${zoom.x}% ${zoom.y}%` }}>
         <svg className="star-connections" width="100%" height="100%" aria-hidden="true">
-          {links.map((l) => (
-            <line
-              key={l.key}
-              ref={(el) => { lineRefs.current[l.key] = el; }}
-              className={`link link-${l.kind} ${isLit(l) ? 'lit' : ''}`}
-              style={l.color ? { stroke: l.color } : undefined}
-            />
-          ))}
+          {groups.map((g) => {
+            const pts = g.members.map((id) => posOf(byId[id]));
+            const cx = pts.reduce((a, p) => a + p.x, 0) / pts.length;
+            const cy = pts.reduce((a, p) => a + p.y, 0) / pts.length;
+            return (
+              <text key={g.id} x={`${cx}%`} y={`${cy}%`} className={`group-label g-${g.id} ${g.featured ? 'featured' : ''}`}>
+                {g.name}
+              </text>
+            );
+          })}
+          {links.map((l) => {
+            const a = posOf(byId[l.from]);
+            const b = posOf(byId[l.to]);
+            const off = !matches(byId[l.from]) || !matches(byId[l.to]);
+            return (
+              <line
+                key={l.key}
+                x1={`${a.x}%`} y1={`${a.y}%`} x2={`${b.x}%`} y2={`${b.y}%`}
+                className={`link link-${l.kind} ${l.group ? `g-${l.group}` : ''} ${l.featured ? 'featured' : ''} ${isLit(l) ? 'lit' : ''} ${off ? 'filtered' : ''}`}
+              />
+            );
+          })}
         </svg>
 
-        {allStars.map((star, i) => (
-          <div
-            key={star.id}
-            className="star-anchor"
-            ref={(el) => { anchorRefs.current[star.id] = el; }}
-          >
+        {allStars.map((star, i) => {
+          const p = posOf(star);
+          const g = groupOf(star);
+          return (
             <Star
+              key={star.id}
               star={star}
-              depth={depthOf(star)}
               index={i}
+              position={p}
+              featured={!!g?.featured}
+              previewUp={p.y > 60}
               isActive={zoom.on && zoom.id === star.id}
-              isDim={hoveredId !== null && !focus.has(star.id)}
+              isDim={(hoveredId !== null && !focus.has(star.id)) || !matches(star)}
               onClick={handleStarClick}
               onHover={setHoveredId}
             />
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {!selectedStar && !showInfoPanel && !zoom.on && (
-        <p className="hint">Click a star to explore · click Beth to know me</p>
+        <p className="hint">Click a star to explore · click Beth to know me · arrow keys to move</p>
       )}
 
       {selectedStar && <ProjectModal project={selectedStar} onClose={closeModal} />}
@@ -200,8 +201,12 @@ const StarMap = () => {
           section={activeSection}
           aboutMe={aboutMe}
           skills={skills}
+          journey={journey}
+          contact={contact}
+          projects={projects}
           onClose={() => setShowInfoPanel(false)}
           onSectionChange={setActiveSection}
+          onSkillSelect={(tag) => { setActiveTag(tag); setShowInfoPanel(false); }}
         />
       )}
     </div>

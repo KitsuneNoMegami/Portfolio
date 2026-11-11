@@ -41,8 +41,11 @@
   stroke-linecap: round;
   transition: stroke-opacity 0.4s, stroke-width 0.4s;
 }
-.link-hub { stroke-width: 1.2; stroke-opacity: 0.3; }
-.link-tag { stroke: var(--star-primary); stroke-width: 1; stroke-opacity: 0.2; stroke-dasharray: 2 7; }
+.link-hub { stroke-width: 1; stroke-opacity: 0.14; }
+.link-group { stroke-width: 1.4; stroke-opacity: 0.45; stroke-dasharray: 3 6; }
+.link-group.featured { stroke-width: 2; stroke-opacity: 0.75; stroke-dasharray: none; }
+.link-group.g-games { stroke: var(--star-secondary); }
+.link.filtered { stroke-opacity: 0.03 !important; }
 
 .has-focus .link:not(.lit) { stroke-opacity: 0.06; }
 
@@ -102,4 +105,61 @@
 @media (prefers-reduced-motion: reduce) {
   .constellation { transition: none; }
   .link.lit, .hint { animation: none; }
+}
+
+/* --- Noms de constellations en filigrane --- */
+.group-label {
+  font-size: clamp(40px, 7vw, 110px);
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  text-transform: uppercase;
+  fill: rgba(255, 154, 158, 0.07);
+  pointer-events: none;
+}
+.group-label.featured { fill: rgba(109, 213, 250, 0.12); }
+
+/* --- Filtres par techno --- */
+.filters {
+  position: absolute;
+  top: 24px;
+  right: 28px;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  max-width: 45vw;
+  animation: fadeIn 1.5s ease 0.6s backwards;
+}
+.chip {
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  padding: 4px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--modal-border);
+  background: rgba(10, 20, 40, 0.6);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.chip:hover, .chip:focus-visible { color: var(--text-primary); border-color: var(--star-primary); outline: none; }
+.chip.on { color: #06101f; background: var(--star-primary); border-color: var(--star-primary); }
+
+.hud-link {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--star-primary);
+  text-decoration: none;
+  pointer-events: auto;
+}
+.hud-link:hover { text-decoration: underline; }
+
+@media (max-width: 768px) {
+  .filters { top: auto; bottom: 12px; right: auto; left: 50%; translate: -50% 0; max-width: 94vw; justify-content: center; }
+  .hint { display: none; }
 }
