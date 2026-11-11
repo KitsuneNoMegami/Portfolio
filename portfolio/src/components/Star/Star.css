@@ -2,198 +2,323 @@
    (propriété indépendante) donc plus aucun !important ni conflit de transform. */
 
 .star {
-  --base: 64px;
-  --s: calc(var(--base) * (0.7 + var(--depth, 1) * 0.4));
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: var(--s);
-  height: var(--s);
-  translate: -50% -50%;
-  cursor: pointer;
-  outline: none;
-  transition: scale 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s ease;
-  animation: star-appear 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
-  animation-delay: calc(0.25s + var(--i, 0) * 0.12s);
+	--base: 64px;
+	--s: calc(var(--base) * (0.7 + var(--depth, 1) * 0.4));
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: var(--s);
+	height: var(--s);
+	translate: -50% -50%;
+	cursor: pointer;
+	outline: none;
+	transition:
+		scale 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+		opacity 0.5s ease;
+	animation: star-appear 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+	animation-delay: calc(0.25s + var(--i, 0) * 0.12s);
 }
 
 .star:hover,
-.star:focus-visible { scale: 1.2; z-index: 3; }
-.star.active { scale: 1.3; z-index: 4; }
-.star.dim { opacity: 0.35; }
+.star:focus-visible {
+	scale: 1.2;
+	z-index: 3;
+}
+.star.active {
+	scale: 1.3;
+	z-index: 4;
+}
+.star.dim {
+	opacity: 0.35;
+}
 
 @keyframes star-appear {
-  from { opacity: 0; scale: 0.2; }
-  to   { opacity: 1; scale: 1; }
+	from {
+		opacity: 0;
+		scale: 0.2;
+	}
+	to {
+		opacity: 1;
+		scale: 1;
+	}
 }
 
 /* --- Cœur de l'étoile --- */
 .star-core {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  animation: bob calc(5s + var(--i, 0) * 0.7s) ease-in-out infinite;
-  animation-delay: calc(var(--i, 0) * -1.1s);
+	position: absolute;
+	inset: 0;
+	border-radius: 50%;
+	animation: bob calc(5s + var(--i, 0) * 0.7s) ease-in-out infinite;
+	animation-delay: calc(var(--i, 0) * -1.1s);
 }
 
 @keyframes bob {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-6px); }
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-6px);
+	}
 }
 
 .star:focus-visible .star-core {
-  outline: 2px solid var(--star-accent);
-  outline-offset: 6px;
+	outline: 2px solid var(--star-accent);
+	outline-offset: 6px;
 }
 
 /* Étoile de projet : orbe chaud + spicules de diffraction */
-.project-star { --base: 56px; }
+.project-star {
+	--base: 56px;
+}
 
 .project-star .star-core {
-  background: radial-gradient(
-    circle,
-    #fff 0 10%,
-    var(--c) 26%,
-    color-mix(in srgb, var(--c) 45%, transparent) 50%,
-    transparent 70%
-  );
-  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--c) 70%, transparent));
-  opacity: calc(0.7 + var(--depth, 1) * 0.25);
+	background: radial-gradient(circle, #fff 0 10%, var(--c) 26%, color-mix(in srgb, var(--c) 45%, transparent) 50%, transparent 70%);
+	filter: drop-shadow(0 0 10px color-mix(in srgb, var(--c) 70%, transparent));
+	opacity: calc(0.7 + var(--depth, 1) * 0.25);
 }
 
 .project-star .star-core::before,
 .project-star .star-core::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 240%;
-  height: 1px;
-  translate: -50% -50%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
-  opacity: 0.55;
-  transition: opacity 0.3s, width 0.3s;
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 240%;
+	height: 1px;
+	translate: -50% -50%;
+	background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+	opacity: 0.55;
+	transition:
+		opacity 0.3s,
+		width 0.3s;
 }
-.project-star .star-core::after { rotate: 90deg; }
+.project-star .star-core::after {
+	rotate: 90deg;
+}
 
 .project-star:hover .star-core::before,
 .project-star:hover .star-core::after,
 .project-star.active .star-core::before,
-.project-star.active .star-core::after { opacity: 1; width: 320%; }
-
-/* Étoile centrale : portrait + halos qui pulsent */
-.central-star { --base: 96px; }
-
-.central-star .star-core {
-  overflow: hidden;
-  background: radial-gradient(circle, var(--central-color), #ff6b6b);
-  border: 2px solid rgba(255, 255, 255, 0.35);
-  box-shadow: 0 0 25px var(--central-glow), 0 0 60px var(--central-glow);
+.project-star.active .star-core::after {
+	opacity: 1;
+	width: 320%;
 }
 
-.central-image { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Étoile centrale : portrait + halos qui pulsent */
+.central-star {
+	--base: 96px;
+}
+
+.central-star .star-core {
+	overflow: hidden;
+	background: radial-gradient(circle, var(--central-color), #ff6b6b);
+	border: 2px solid rgba(255, 255, 255, 0.35);
+	box-shadow:
+		0 0 25px var(--central-glow),
+		0 0 60px var(--central-glow);
+}
+
+.central-image {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
 
 .central-star::before,
 .central-star::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 1px solid var(--central-color);
-  opacity: 0;
-  pointer-events: none;
-  animation: halo 4s ease-out infinite;
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: 50%;
+	border: 1px solid var(--central-color);
+	opacity: 0;
+	pointer-events: none;
+	animation: halo 4s ease-out infinite;
 }
-.central-star::after { animation-delay: 2s; }
+.central-star::after {
+	animation-delay: 2s;
+}
 
 @keyframes halo {
-  0%   { transform: scale(1);   opacity: 0.6; }
-  100% { transform: scale(2.6); opacity: 0; }
+	0% {
+		transform: scale(1);
+		opacity: 0.6;
+	}
+	100% {
+		transform: scale(2.6);
+		opacity: 0;
+	}
 }
 
 /* --- Libellé : nom toujours visible (discret), tags au survol --- */
 .star-label {
-  position: absolute;
-  top: calc(100% + 10px);
-  left: 50%;
-  translate: -50% 0;
-  text-align: center;
-  white-space: nowrap;
-  pointer-events: none;
+	position: absolute;
+	top: calc(100% + 10px);
+	left: 50%;
+	translate: -50% 0;
+	text-align: center;
+	white-space: nowrap;
+	pointer-events: none;
 }
 
 .star-name {
-  display: block;
-  font-size: 12px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  text-shadow: 0 0 8px #000, 0 0 2px #000;
-  transition: color 0.3s;
+	display: block;
+	font-size: 12px;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--text-secondary);
+	text-shadow:
+		0 0 8px #000,
+		0 0 2px #000;
+	transition: color 0.3s;
 }
 
 .star-tags {
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 6px;
-  opacity: 0;
-  translate: 0 -4px;
-  transition: opacity 0.3s, translate 0.3s;
+	display: flex;
+	justify-content: center;
+	gap: 6px;
+	margin-top: 6px;
+	opacity: 0;
+	translate: 0 -4px;
+	transition:
+		opacity 0.3s,
+		translate 0.3s;
 }
 
 .star:hover .star-name,
 .star:focus-visible .star-name,
-.star.active .star-name { color: var(--text-primary); }
+.star.active .star-name {
+	color: var(--text-primary);
+}
 
 .star:hover .star-tags,
 .star:focus-visible .star-tags,
-.star.active .star-tags { opacity: 1; translate: 0 0; }
+.star.active .star-tags {
+	opacity: 1;
+	translate: 0 0;
+}
 
 /* Pas de survol sur tactile : tags toujours visibles */
-@media (hover: none) { .star-tags { opacity: 1; translate: 0 0; } }
+@media (hover: none) {
+	.star-tags {
+		opacity: 1;
+		translate: 0 0;
+	}
+}
 
 @media (max-width: 768px) {
-  .project-star { --base: 44px; }
-  .central-star { --base: 70px; }
-  .star-name { font-size: 10px; letter-spacing: 0.06em; }
+	.project-star {
+		--base: 44px;
+	}
+	.central-star {
+		--base: 70px;
+	}
+	.star-name {
+		font-size: 10px;
+		letter-spacing: 0.06em;
+	}
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .star, .star-core, .central-star::before, .central-star::after { animation: none; }
+	.star,
+	.star-core,
+	.central-star::before,
+	.central-star::after {
+		animation: none;
+	}
 }
 
 /* --- Web mis en avant : étoiles plus grandes --- */
-.project-star.featured { --base: 72px; }
-.project-star.featured .star-core {
-  filter: drop-shadow(0 0 16px color-mix(in srgb, var(--c) 80%, transparent));
+.project-star.featured {
+	--base: 72px;
 }
-@media (max-width: 768px) { .project-star.featured { --base: 56px; } }
+.project-star.featured .star-core {
+	filter: drop-shadow(0 0 16px color-mix(in srgb, var(--c) 80%, transparent));
+}
+@media (max-width: 768px) {
+	.project-star.featured {
+		--base: 56px;
+	}
+}
 
 /* --- Aperçu au survol (jamais sur tactile) --- */
 .star-preview {
-  position: absolute;
-  left: 50%;
-  translate: -50% 0;
-  width: 220px;
-  padding: 8px;
-  border-radius: 10px;
-  background: var(--modal-bg);
-  border: 1px solid var(--modal-border);
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
-  font-size: 12px;
-  line-height: 1.4;
-  color: var(--text-secondary);
-  text-align: left;
-  white-space: normal;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s;
-  z-index: 5;
+	position: absolute;
+	left: 50%;
+	translate: -50% 0;
+	width: 220px;
+	padding: 8px;
+	border-radius: 10px;
+	background: var(--modal-bg);
+	border: 1px solid var(--modal-border);
+	box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+	font-size: 12px;
+	line-height: 1.4;
+	color: var(--text-secondary);
+	text-align: left;
+	white-space: normal;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.25s;
+	z-index: 5;
 }
-.star-preview.below { top: calc(100% + 70px); }
-.star-preview.up { bottom: calc(100% + 18px); }
-.star-preview img { display: block; width: 100%; height: 110px; object-fit: cover; border-radius: 6px; margin-bottom: 6px; }
+.star-preview.below {
+	top: calc(100% + 70px);
+}
+.star-preview.up {
+	bottom: calc(100% + 18px);
+}
+.star-preview img {
+	display: block;
+	width: 100%;
+	height: 110px;
+	object-fit: cover;
+	border-radius: 6px;
+	margin-bottom: 6px;
+}
 .project-star:hover .star-preview,
-.project-star:focus-visible .star-preview { opacity: 1; }
-@media (hover: none) { .star-preview { display: none; } }
+.project-star:focus-visible .star-preview {
+	opacity: 1;
+}
+@media (hover: none) {
+	.star-preview {
+		display: none;
+	}
+}
+
+.central-star .star-core { overflow: visible; }
+.central-star:hover { scale: 1.08; }   /* évite de cumuler avec le zoom de l'image */
+
+.central-pop {
+  --r: calc(var(--s) / 2);
+  position: absolute;
+  left: -2px; right: -2px; bottom: -2px;   /* compense la bordure de 2px */
+  height: calc(var(--s) * 1.7);            /* place pour que la tête monte */
+  pointer-events: none;
+  -webkit-mask-image:
+    radial-gradient(circle var(--r) at 50% calc(100% - var(--r)), #000 98%, transparent 100%),
+    linear-gradient(#000, #000);
+  -webkit-mask-size: 100% 100%, 100% calc(100% - var(--r));
+  -webkit-mask-repeat: no-repeat;
+  mask-image:
+    radial-gradient(circle var(--r) at 50% calc(100% - var(--r)), #000 98%, transparent 100%),
+    linear-gradient(#000, #000);
+  mask-size: 100% 100%, 100% calc(100% - var(--r));
+  mask-repeat: no-repeat;
+}
+
+.central-pop .central-image {
+  position: absolute;
+  left: 0; bottom: 0;
+  width: 100%;
+  height: var(--s);
+  object-fit: cover;
+  object-position: center top;
+  transform-origin: 50% 100%;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.central-star:hover .central-image,
+.central-star:focus-visible .central-image { transform: scale(1.4); }
