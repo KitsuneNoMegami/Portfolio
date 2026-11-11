@@ -4,9 +4,15 @@ import { useEffect, useRef } from 'react';
 // La projection x/z crée une vraie perspective : parallaxe souris, dérive lente vers l'avant,
 // "warp" quand on clique une étoile, étoiles filantes occasionnelles.
 const COLORS = ['255,255,255', '200,225,255', '109,213,250', '255,236,139', '255,154,158'];
+// INTERRUPTEUR : true = le fond suit le curseur (parallaxe), false = fond fixe
+const CURSOR_PARALLAX = true;
+// Décalage maximal de la caméra, en unités du monde (pas en pixels).
+// En pixels à l'écran : amp * focal / z -> grand pour les étoiles proches (z petit).
+const AMP = 0.03;
+
 const rand = (a, b) => a + Math.random() * (b - a);
 
-const Starfield = ({ pointerRef, warpKey = 0 }) => {
+const Starfield = ({ warpKey = 0 }) => {
   const canvasRef = useRef(null);
   const warpRef = useRef(0);
 
@@ -22,7 +28,16 @@ const Starfield = ({ pointerRef, warpKey = 0 }) => {
     let stars = [];
     let shooting = null;
     let nextShoot = rand(3000, 7000);
-    const cam = { x: 0, y: 0 };
+    const cam = { x: 0, y: 0 };            // position lissée de la caméra
+    const pointer = { x: 0, y: 0 };         // curseur normalisé, de -1 à 1
+    const root = canvas.parentElement;      // .starfield : porte --mx/--my pour les nébuleuses
+
+    // 1) Lecture de la souris : (clientX / largeur - 0.5) * 2  ->  -1 (gauche) .. 1 (droite)
+    const onMove = (e) => {
+      pointer.x = (e.clientX / window.innerWidth - 0.5) * 2;
+      pointer.y = (e.clientY / window.innerHeight - 0.5) * 2;
+    };
+    if (CURSOR_PARALLAX && !reduced) window.addEventListener('pointermove', onMove);
 
     // x/y sont choisis pour que la projection soit uniforme sur l'écran, quel que soit z
     const makeStar = (z) => {
@@ -56,11 +71,13 @@ const Starfield = ({ pointerRef, warpKey = 0 }) => {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
 
-      const p = pointerRef?.current || { x: 0, y: 0 };
-      const amp = reduced ? 0 : 0.03;
+      // 2) Lissage : la caméra rattrape le curseur avec un léger retard (dt * 3 ~ 1/3 s)
       const ease = Math.min(1, dt * 3);
-      cam.x += (p.x * amp - cam.x) * ease;
-      cam.y += (p.y * amp - cam.y) * ease;
+      cam.x += (pointer.x * AMP - cam.x) * ease;
+      cam.y += (pointer.y * AMP - cam.y) * ease;
+      // 3) Mêmes valeurs (-1..1) pour les nébuleuses CSS
+      root.style.setProperty('--mx', (cam.x / AMP).toFixed(3));
+      root.style.setProperty('--my', (cam.y / AMP).toFixed(3));
 
       warpRef.current = Math.max(0, warpRef.current - dt * 1.4);
       const warp = warpRef.current;
@@ -144,10 +161,11 @@ const Starfield = ({ pointerRef, warpKey = 0 }) => {
     raf = requestAnimationFrame(frame);
 
     return () => {
+      window.removeEventListener('pointermove', onMove);
       cancelAnimationFrame(raf);
       window.removeEventListener('resize', resize);
     };
-  }, [pointerRef]);
+  }, []);
 
   return (
     <div className="starfield" aria-hidden="true">
