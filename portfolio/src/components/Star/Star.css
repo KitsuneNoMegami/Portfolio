@@ -162,3 +162,38 @@
 @media (prefers-reduced-motion: reduce) {
   .star, .star-core, .central-star::before, .central-star::after { animation: none; }
 }
+
+/* --- Web mis en avant : étoiles plus grandes --- */
+.project-star.featured { --base: 72px; }
+.project-star.featured .star-core {
+  filter: drop-shadow(0 0 16px color-mix(in srgb, var(--c) 80%, transparent));
+}
+@media (max-width: 768px) { .project-star.featured { --base: 56px; } }
+
+/* --- Aperçu au survol (jamais sur tactile) --- */
+.star-preview {
+  position: absolute;
+  left: 50%;
+  translate: -50% 0;
+  width: 220px;
+  padding: 8px;
+  border-radius: 10px;
+  background: var(--modal-bg);
+  border: 1px solid var(--modal-border);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+  text-align: left;
+  white-space: normal;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+  z-index: 5;
+}
+.star-preview.below { top: calc(100% + 70px); }
+.star-preview.up { bottom: calc(100% + 18px); }
+.star-preview img { display: block; width: 100%; height: 110px; object-fit: cover; border-radius: 6px; margin-bottom: 6px; }
+.project-star:hover .star-preview,
+.project-star:focus-visible .star-preview { opacity: 1; }
+@media (hover: none) { .star-preview { display: none; } }
