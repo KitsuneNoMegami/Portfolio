@@ -88,11 +88,15 @@ body { background: #000; color: #fff; line-height: 1.6; }
   background:
     radial-gradient(ellipse 45% 40% at 18% 28%, var(--nebula-1), transparent 70%),
     radial-gradient(ellipse 50% 45% at 82% 78%, var(--nebula-2), transparent 70%);
+  /* lointaine : -8px max. Le signe "-" = déplacement opposé au curseur */
+  translate: calc(var(--mx, 0) * -8px) calc(var(--my, 0) * -8px);
 }
 .nebula-near {
   background:
     radial-gradient(ellipse 35% 30% at 62% 22%, var(--nebula-3), transparent 70%),
     radial-gradient(ellipse 30% 28% at 30% 80%, var(--nebula-1), transparent 70%);
+  /* proche : -22px max, donc elle bouge plus que la lointaine (effet de profondeur) */
+  translate: calc(var(--mx, 0) * -22px) calc(var(--my, 0) * -22px);
   animation-duration: 90s;
   animation-direction: alternate-reverse;
 }
@@ -135,3 +139,8 @@ body { background: #000; color: #fff; line-height: 1.6; }
 @media (prefers-reduced-motion: reduce) {
   .nebula { animation: none; }
 }
+
+/* Méta d'un projet (rôle, équipe, apprentissages) */
+.project-meta { margin: 16px 0; display: grid; gap: 10px; }
+.project-meta dt { font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--star-primary); }
+.project-meta dd { color: var(--text-color); }
