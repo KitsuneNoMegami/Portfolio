@@ -13,7 +13,7 @@ const allTags = [...new Set(projects.flatMap((p) => p.tags || []))].sort((a, b) 
   a === 'Web' ? -1 : b === 'Web' ? 1 : a.localeCompare(b)
 );
 
-// Liens : Moi → chaque projet (hub) + tracé de chaque constellation (group)
+// Liens : Beth → chaque projet (hub) + tracé de chaque constellation (group)
 const links = [
   ...projects.map((p) => ({ key: `h${p.id}`, from: 0, to: p.id, kind: 'hub' })),
   ...groups.flatMap((g) =>
@@ -157,8 +157,11 @@ const StarMap = () => {
             );
           })}
           {links.map((l) => {
-            const a = posOf(byId[l.from]);
-            const b = posOf(byId[l.to]);
+            let a = posOf(byId[l.from]);
+            let b = posOf(byId[l.to]);
+            // Les pointillés défilent de (x1,y1) vers (x2,y2). Si l'étoile survolée est
+            // l'extrémité "to", on inverse les points : le flux part toujours de l'étoile survolée.
+            if (isLit(l) && l.to === hoveredId) [a, b] = [b, a];
             const off = !matches(byId[l.from]) || !matches(byId[l.to]);
             return (
               <line
@@ -191,7 +194,7 @@ const StarMap = () => {
       </div>
 
       {!selectedStar && !showInfoPanel && !zoom.on && (
-        <p className="hint">Click a star to explore · click Beth to know me · arrow keys to move</p>
+        <p className="hint">Click a star to explore · click Beth to know me ^^</p>
       )}
 
       {selectedStar && <ProjectModal project={selectedStar} onClose={closeModal} />}
